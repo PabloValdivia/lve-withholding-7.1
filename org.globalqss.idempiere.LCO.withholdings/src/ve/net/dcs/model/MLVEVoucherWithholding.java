@@ -18,6 +18,8 @@ import org.compiere.model.MAllocationHdr;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MBankAccount;
+import org.compiere.model.MClient;
+import org.compiere.model.MClientInfo;
 import org.compiere.model.MDocType;
 import org.compiere.model.MFactAcct;
 import org.compiere.model.MInvoice;
@@ -170,10 +172,11 @@ public class MLVEVoucherWithholding extends X_LVE_VoucherWithholding implements 
 		payment.setDateTrx(getDateTrx());
 		payment.setTenderType("X");
 		payment.setC_BPartner_ID(getC_BPartner_ID());
-		MAcctSchema[] m_ass = MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID());
+		//MAcctSchema[] m_ass = MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID());
+		MAcctSchema m_ass = MClientInfo.get(getCtx(), getAD_Client_ID()).getMAcctSchema1();
 		int C_Currency_ID = 0;
-		if (m_ass.length > 0)
-			C_Currency_ID = m_ass[0].getC_Currency_ID();
+		//if (m_ass.length > 0)
+			C_Currency_ID = m_ass.getC_Currency_ID();
 
 		payment.setC_Currency_ID(C_Currency_ID);
 		payment.setPayAmt(Env.ZERO);
