@@ -20,6 +20,7 @@ import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MBankAccount;
 import org.compiere.model.MClient;
 import org.compiere.model.MClientInfo;
+import org.compiere.model.MConversionRate;
 import org.compiere.model.MDocType;
 import org.compiere.model.MFactAcct;
 import org.compiere.model.MInvoice;
@@ -259,7 +260,7 @@ public class MLVEVoucherWithholding extends X_LVE_VoucherWithholding implements 
 					rs = null;
 					pstmt = null;
 				}
-
+				InvoiceOpenAmt = MConversionRate.convert(getCtx(), InvoiceOpenAmt, mWithholding.getC_Invoice().getC_Currency_ID(), C_Currency_ID, getDateTrx(), 114, getAD_Client_ID(), getAD_Org_ID());
 				pa.setInvoiceAmt(InvoiceOpenAmt);
 			}
 
@@ -271,6 +272,7 @@ public class MLVEVoucherWithholding extends X_LVE_VoucherWithholding implements 
 			pa.setOverUnderAmt(InvoiceOpenAmt.subtract(pa.getWriteOffAmt()));
 			
 			pa.saveEx();
+			mWithholding.setProcessed(true);
 		}
 		
 		setC_Payment_ID(payment.getC_Payment_ID());

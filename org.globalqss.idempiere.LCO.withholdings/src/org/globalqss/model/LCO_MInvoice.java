@@ -22,8 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.compiere.model.MAcctSchema;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
+import org.compiere.model.MClientInfo;
+import org.compiere.model.MConversionRate;
+import org.compiere.model.MCurrency;
 import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MLocation;
@@ -56,6 +60,8 @@ public class LCO_MInvoice extends MInvoice
 		
 		MDocType dt = new MDocType(getCtx(), getC_DocTypeTarget_ID(), get_TrxName());
 		String genwh = dt.get_ValueAsString("GenerateWithholding");
+		//CLient Currency
+		
 		if (genwh == null || genwh.equals("N") || genwh.equals(""))
 			return 0;
 		
@@ -81,6 +87,9 @@ public class LCO_MInvoice extends MInvoice
 		// Search withholding types applicable depending on IsSOTrx
 		List<Object> params = new ArrayList<Object>();
 		
+		//currency
+		MAcctSchema m_ass = MClientInfo.get(getCtx(), getAD_Client_ID()).getMAcctSchema1();
+		int C_Currency_ID = m_ass.getC_Currency_ID();
 		String sqlwhere  = "IsSOTrx=?";
 		params.add(isSOTrx() ? "Y" : "N");
 		if (voucher != null){
@@ -345,7 +354,6 @@ public class LCO_MInvoice extends MInvoice
 							+ " WHERE IsActive='Y' AND C_Invoice_ID = ? ";
 					}
 					base = DB.getSQLValueBD(get_TrxName(), sqllca, paramslca);
-					
 					//SUBTRAHEND
 //					if (MinAmount.compareTo(Env.ZERO) > 0) {
 //						PreparedStatement pstmt2 = null;
@@ -404,6 +412,8 @@ public class LCO_MInvoice extends MInvoice
 						base = DB.getSQLValueBD(get_TrxName(), sqlbsat, new Object[] {getC_Invoice_ID()});
 					}
 				}
+				//convert base
+				
 				log.info("Base: "+base+ " Thresholdmin:"+wc.getThresholdmin());
 
 				// if base between thresholdmin and thresholdmax inclusive
@@ -435,6 +445,8 @@ public class LCO_MInvoice extends MInvoice
 							wc.getAmountRefunded().compareTo(Env.ZERO) > 0) {
 						taxamt = taxamt.subtract(wc.getAmountRefunded());
 					}
+					base = MConversionRate.convert(getCtx(), base, getC_Currency_ID(), C_Currency_ID, getDateInvoiced(), 114, getAD_Client_ID(), getAD_Org_ID());
+					taxamt = MConversionRate.convert(getCtx(), taxamt, getC_Currency_ID(), C_Currency_ID, getDateInvoiced(), 114, getAD_Client_ID(), getAD_Org_ID());
 					iwh.setTaxAmt(taxamt);
 					iwh.setTaxBaseAmt(base);
 					iwh.set_ValueOfColumn("Subtrahend", wc.getAmountRefunded());
