@@ -18,7 +18,6 @@ import org.compiere.model.MAllocationHdr;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MBankAccount;
-import org.compiere.model.MClient;
 import org.compiere.model.MClientInfo;
 import org.compiere.model.MConversionRate;
 import org.compiere.model.MDocType;
@@ -173,13 +172,14 @@ public class MLVEVoucherWithholding extends X_LVE_VoucherWithholding implements 
 		payment.setDateTrx(getDateTrx());
 		payment.setTenderType("X");
 		payment.setC_BPartner_ID(getC_BPartner_ID());
+		String useCurrencyConversion = MSysConfig.getValue("LVE_WHUseCurrencyConvert", "Y", getAD_Client_ID());
 		//MAcctSchema[] m_ass = MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID());
 		MAcctSchema m_ass = MClientInfo.get(getCtx(), getAD_Client_ID()).getMAcctSchema1();
 		int C_Currency_ID = 0;
 		//if (m_ass.length > 0)
 			C_Currency_ID = m_ass.getC_Currency_ID();
-
-		payment.setC_Currency_ID(C_Currency_ID);
+		if("Y".equalsIgnoreCase(useCurrencyConversion))
+			payment.setC_Currency_ID(C_Currency_ID);
 		payment.setPayAmt(Env.ZERO);
 		payment.setOverUnderAmt(Env.ZERO);
 		payment.setWriteOffAmt(Env.ZERO);
@@ -260,7 +260,10 @@ public class MLVEVoucherWithholding extends X_LVE_VoucherWithholding implements 
 					rs = null;
 					pstmt = null;
 				}
-				InvoiceOpenAmt = MConversionRate.convert(getCtx(), InvoiceOpenAmt, mWithholding.getC_Invoice().getC_Currency_ID(), C_Currency_ID, getDateTrx(), 114, getAD_Client_ID(), getAD_Org_ID());
+				if("Y".equalsIgnoreCase(useCurrencyConversion))
+					InvoiceOpenAmt = MConversionRate.convert(getCtx(), InvoiceOpenAmt, mWithholding.getC_Invoice().getC_Currency_ID(), C_Currency_ID, getDateTrx(), 114, getAD_Client_ID(), getAD_Org_ID());
+				else
+					payment.setC_Currency_ID(mWithholding.getC_Invoice().getC_Currency_ID());
 				pa.setInvoiceAmt(InvoiceOpenAmt);
 			}
 

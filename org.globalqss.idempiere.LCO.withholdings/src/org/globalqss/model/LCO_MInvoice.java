@@ -27,12 +27,12 @@ import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MClientInfo;
 import org.compiere.model.MConversionRate;
-import org.compiere.model.MCurrency;
 import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MLocation;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.MPriceList;
+import org.compiere.model.MSysConfig;
 import org.compiere.model.MTax;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -445,8 +445,10 @@ public class LCO_MInvoice extends MInvoice
 							wc.getAmountRefunded().compareTo(Env.ZERO) > 0) {
 						taxamt = taxamt.subtract(wc.getAmountRefunded());
 					}
-//					base = MConversionRate.convert(getCtx(), base, getC_Currency_ID(), C_Currency_ID, getDateInvoiced(), 114, getAD_Client_ID(), getAD_Org_ID());
-//					taxamt = MConversionRate.convert(getCtx(), taxamt, getC_Currency_ID(), C_Currency_ID, getDateInvoiced(), 114, getAD_Client_ID(), getAD_Org_ID());
+					if("Y".equalsIgnoreCase(MSysConfig.getValue("LVE_WHUseCurrencyConvert", "Y", getAD_Client_ID()))) {
+						base = MConversionRate.convert(getCtx(), base, getC_Currency_ID(), C_Currency_ID, getDateInvoiced(), 114, getAD_Client_ID(), getAD_Org_ID());
+						taxamt = MConversionRate.convert(getCtx(), taxamt, getC_Currency_ID(), C_Currency_ID, getDateInvoiced(), 114, getAD_Client_ID(), getAD_Org_ID());
+					}
 					iwh.setTaxAmt(taxamt);
 					iwh.setTaxBaseAmt(base);
 					iwh.set_ValueOfColumn("Subtrahend", wc.getAmountRefunded());
