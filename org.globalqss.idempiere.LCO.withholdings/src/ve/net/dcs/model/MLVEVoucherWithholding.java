@@ -178,8 +178,7 @@ public class MLVEVoucherWithholding extends X_LVE_VoucherWithholding implements 
 		int C_Currency_ID = 0;
 		//if (m_ass.length > 0)
 			C_Currency_ID = m_ass.getC_Currency_ID();
-		if("Y".equalsIgnoreCase(useCurrencyConversion))
-			payment.setC_Currency_ID(C_Currency_ID);
+		payment.setC_Currency_ID(C_Currency_ID);
 		payment.setPayAmt(Env.ZERO);
 		payment.setOverUnderAmt(Env.ZERO);
 		payment.setWriteOffAmt(Env.ZERO);
